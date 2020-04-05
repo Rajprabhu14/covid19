@@ -62956,13 +62956,18 @@ var createTextStyle = function createTextStyle(feature) {
     text: feature.get('ST_NM'),
     color: "#000"
   });
-};
+}; // variable for mover interaction ferature
+
+
+var selected = null;
+var tooltipDiv = d3.select('body').append('div').attr('class', 'tooltip').style('display', 'none'); // filte function for available data
 
 var filteredData = function filteredData(name) {
   return covid_details.records.filter(function (d) {
     return d.name_of_state_ut == name;
   });
-};
+}; // return color based on value
+
 
 var createColor = function createColor(feature) {
   if (covid_details == null) {
@@ -62971,14 +62976,13 @@ var createColor = function createColor(feature) {
     var data = filteredData(feature.get('ST_NM')); // covid_details.records.filter(d => d.name_of_state_ut == feature.get('ST_NM'));
 
     if (data.length) {
-      return colorSequence(parseInt(data[0].total_confirmed_cases)); //   return new Fill({
-      //     color: colorSequence(parseInt(data[0].total_confirmed_cases))
-      //   });
+      return colorSequence(parseInt(data[0].total_confirmed_cases));
     }
 
     return 'rgba(255, 255, 255, 0.6)';
   }
-};
+}; // Default style
+
 
 var indiaStyle = function indiaStyle(feature, resolution) {
   return new _style.Style({
@@ -63002,35 +63006,48 @@ var indiaStyle = function indiaStyle(feature, resolution) {
     // })
 
   });
-};
+}; // hight light for chart on hover
 
-var vector = new _layer.Vector({
-  source: new _Vector.default({
-    url: './data/top.json',
-    format: new _TopoJSON.default({
-      featureProjection: 'EPSG:3857'
+
+var indiaHighlightStyle = function indiaHighlightStyle(feature) {
+  return new _style.Style({
+    fill: new _style.Fill({
+      color: createColor(feature)
     }),
-    overlaps: false
-  }),
-  style: indiaStyle //  function(feature) {
-  //   style.getText().setText(feature.get('ST_NM'));
-  //   return style;
-  // }
+    // createFillColor(feature),
+    stroke: new _style.Stroke({
+      color: 'Tomato',
+      width: 3
+    }),
+    text: createTextStyle(feature)
+  });
+}; // refresh topojson
 
-});
-var map = new _Map.default({
-  controls: (0, _control.defaults)().extend([new _control.ZoomToExtent({
-    extent: [7083572.2852, 670199.8640, 10842024.260498, 4255931.279733]
-  })]),
-  layers: [vector],
-  target: 'map',
-  view: new _View.default({
-    center: [8649002.624524, 2377497.327782]
-  })
-});
-map.getView().fit([7083572.2852, 670199.8640, 10842024.260498, 4255931.279733], {
-  constrainResolution: true
-});
+
+function updateMapColor(feature) {
+  // vector.getSource().forEachFeature((feature)=>{
+  //   console.log(feature);
+  // });
+  vector.getSource().refresh();
+  d3.select('.pageloader').classed("is-active", false); // style.getText().setText(feature.get('ST_NM'));
+  // return style;
+} // table structure for state hover or click event
+
+
+var constructTable = function constructTable(data) {
+  var header = "<table class='table is-narrow is-bordered''> \
+  <thead> \
+    <tr> \
+    <th>Field</th> \
+    <th>Value</th> \
+    </tr> \
+  </thead>";
+  var body = " <tbody><tr>     <td>Id</td>     <td>".concat(data.s_no, "</td>     </tr>     <tr>     <td>Name</td>     <td>").concat(data.name_of_state_ut, "</td>     </tr>     <tr>     <td>Total Confirm Cases</td>     <td>").concat(data.total_confirmed_cases, "</td>     </tr>     <tr>     <td>Cured/Discharged/Migrated</td>     <td>").concat(data.cured_discharged_migrated, "</td>     </tr>     <tr>     <td>Death</td>     <td>").concat(data.death, "</td>     </tr>     <tr>     <td>Last Update</td>     <td>").concat(data.date_time, "</td>     </tr> </tbody></table>");
+  var mobile_body = "<tbody><tr>     <td>Id</td>     <td>".concat(data.s_no, "</td>     </tr>     <tr>     <td>Name</td>     <td>").concat(data.name_of_state_ut, "</td>     </tr>     <tr>     <td>TotalCases</td>     <td>").concat(data.total_confirmed_cases, "</td>     </tr>     <tr>     <td>Cured</td>     <td>").concat(data.cured_discharged_migrated, "</td>     </tr>     <tr>     <td>Death</td>     <td>").concat(data.death, "</td>     </tr>     <tr>     <td>LastUpdate</td>     <td>").concat(data.date_time.split(' ')[0] + '<br/>' + data.date_time.split(' ')[1], "</td>     </tr> </tbody></table>");
+  return header + mobile_body;
+}; // get request from data.gov,in
+
+
 https.get('https://api.data.gov.in/resource/cd08e47b-bd70-4efb-8ebc-589344934531?format=json&limit=all&api-key=579b464db66ec23bdd000001cdc3b564546246a772a26393094f5645', function (res) {
   console.log('statusCode:', res.statusCode);
   console.log('headers:', res.headers);
@@ -63041,7 +63058,8 @@ https.get('https://api.data.gov.in/resource/cd08e47b-bd70-4efb-8ebc-589344934531
   res.on('end', function () {
     console.log(body);
     covid_details = JSON.parse(body);
-    var initial_val = 0;
+    var initial_val = 0; // sum for main display
+
     total_cases = covid_details.records.reduce(function (total, curr) {
       total += parseInt(curr.total_confirmed_cases);
       return total;
@@ -63056,56 +63074,229 @@ https.get('https://api.data.gov.in/resource/cd08e47b-bd70-4efb-8ebc-589344934531
       total += parseInt(curr.death);
       return total;
     }, initial_val);
-    d3.select('#deathCases').html(death);
+    d3.select('#deathCases').html(death); // min max for color creation
+
     var min = d3.min(covid_details.records, function (d) {
       return parseInt(d.total_confirmed_cases);
     });
     var max = d3.max(covid_details.records, function (d) {
       return parseInt(d.total_confirmed_cases);
     });
-    colorSequence.domain([min, max + 200]);
-    console.log(covid_details);
+    colorSequence.domain([min, max + 200]); //  update style for map
+
     vector.style = updateMapColor();
     var sorted_data = covid_details.records.sort(function (a, b) {
       return parseInt(a.s_no) < parseInt(b.s_no) ? 1 : -1;
     });
-    covid_details.records = sorted_data.reverse();
+    covid_details.records = sorted_data.reverse(); // top for bar chart most cases
+
     var top5Cases = covid_details.records.sort(function (a, b) {
       return parseInt(a.total_confirmed_cases) < parseInt(b.total_confirmed_cases) ? 1 : -1;
-    }).slice(0, 5);
-    console.log(top5Cases);
-    highestcaseChart(top5Cases);
+    }).slice(0, 5); // console.log(top5Cases);
+
+    highestcaseChart(top5Cases); // pie chart data update
+
     pieChart(covid_details.records);
     createDatatable(covid_details);
   });
 }).on('error', function (e) {
   console.error(e);
-});
+}); // chart events
 
-function updateMapColor(feature) {
-  // vector.getSource().forEachFeature((feature)=>{
-  //   console.log(feature);
-  // });
-  vector.getSource().refresh();
-  d3.select('.pageloader').classed("is-active", false); // style.getText().setText(feature.get('ST_NM'));
-  // return style;
+function mouseover() {
+  tooltipDiv.style('display', 'inline');
 }
 
-var selected = null;
+function mousemove() {
+  var d = d3.select(this).data()[0];
+  tooltipDiv.html(d.name_of_state_ut + '<br/>' + d.total_confirmed_cases).style('left', d3.event.pageX - 10 + 'px').style('top', d3.event.pageY - 12 + 'px');
+  setTimeout(function () {
+    mouseout();
+  }, 5000);
+}
 
-var indiaHighlightStyle = function indiaHighlightStyle(feature) {
-  return new _style.Style({
-    fill: new _style.Fill({
-      color: createColor(feature)
-    }),
-    // createFillColor(feature),
-    stroke: new _style.Stroke({
-      color: 'Tomato',
-      width: 3
-    }),
-    text: createTextStyle(feature)
+function mouseout() {
+  tooltipDiv.style('display', 'none');
+} // changes of position for overlay popup
+
+
+var getOverlayOffsets = function getOverlayOffsets(mapInstance, overlay) {
+  var overlayRect = overlay.getElement().getBoundingClientRect();
+  var mapRect = mapInstance.getTargetElement().getBoundingClientRect();
+  var margin = 15; // if (!ol.extent.containsExtent(mapRect, overlayRect)) //could use, but need to convert rect to extent
+
+  var offsetLeft = overlayRect.left - mapRect.left;
+  var offsetRight = mapRect.right - overlayRect.right;
+  var offsetTop = overlayRect.top - mapRect.top;
+  var offsetBottom = mapRect.bottom - overlayRect.bottom;
+  console.log('offsets', offsetLeft, offsetRight, offsetTop, offsetBottom);
+  var delta = [0, 0];
+
+  if (offsetLeft < 0) {
+    // move overlay to the right
+    delta[0] = margin - offsetLeft;
+  } else if (offsetRight < 0) {
+    // move overlay  to the left
+    delta[0] = -(Math.abs(offsetRight) + margin);
+  }
+
+  if (offsetTop < 0) {
+    // will change the positioning instead of the offset to move overlay down.
+    delta[1] = margin - offsetTop;
+  } else if (offsetBottom < 0) {
+    // move overlay up - never happens if bottome-center is default.
+    delta[1] = -(Math.abs(offsetBottom) + margin);
+  }
+
+  return delta;
+}; // create bar chart
+
+
+function highestcaseChart(data) {
+  var element = document.getElementById("mostCasesBarChart");
+  d3.select("#mostCasesBarChart svg").remove();
+  var width = +element.clientWidth;
+  element.style.height = width / 2 + 'px'; // element.clientHeight = +element.clientHeight+50
+
+  var height = +element.clientHeight; // set the dimensions and margins of the graph
+
+  var margin = {
+    left: 40,
+    top: 0,
+    right: 10,
+    bottom: 50
+  };
+  width = width - margin.left - margin.right, height = height - margin.top - margin.bottom; // append the svg object to the body of the page
+
+  var svg = d3.select("#mostCasesBarChart").append("svg").attr("width", width + margin.left + margin.right).attr("height", height + margin.top + margin.bottom).append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")"); // X axis
+
+  var x = d3.scaleBand().range([0, width]).domain(data.map(function (d) {
+    return d.name_of_state_ut;
+  })).padding(0.2);
+  svg.append("g").attr("transform", "translate(0," + height + ")").call(d3.axisBottom(x)).selectAll("text").attr("class", "axis").attr("transform", "translate(-10,0)rotate(-35)").style("text-anchor", "end"); // Add Y axis
+
+  var y = d3.scaleLinear().domain([0, d3.max(data, function (d) {
+    return parseInt(d.total_confirmed_cases) + 100;
+  })]).range([height, 0]);
+  svg.append("g").attr("class", "axis").call(d3.axisLeft(y).ticks(5)); // Bars
+
+  svg.selectAll("bar").data(data).enter().append("rect").attr("x", function (d) {
+    return x(d.name_of_state_ut);
+  }).attr("width", x.bandwidth()).attr("fill", function (d) {
+    return colorSequence(d.total_confirmed_cases);
+  }) // no bar at the beginning thus:
+  .attr("height", function (d) {
+    return height - y(0);
+  }) // always equal to 0
+  .attr("y", function (d) {
+    return y(0);
+  }).on('mouseover', mouseover).on('click', mousemove); // Animation
+
+  svg.selectAll("rect").transition().duration(1000).attr("y", function (d) {
+    return y(d.total_confirmed_cases);
+  }).attr("height", function (d) {
+    return height - y(d.total_confirmed_cases);
+  }).delay(function (d, i) {
+    console.log(i);
+    return i * 200;
+  }); // text label for the y axis
+
+  svg.append("text").attr("transform", "rotate(-90)").attr("y", 0 - margin.left).attr("x", 0 - height / 2).attr("dy", ".8em").style("text-anchor", "middle").style("font-size", '11px').text("No of cases");
+  svg.append('text').attr('transform', "translate(".concat(width - margin.left, ", ").concat(height + 50, ")")).style("text-anchor", "middle").style("font-size", '11px').text("States");
+} // create pie charts
+
+
+function pieChart(rawData) {
+  // var margin = { left: 40, top: 0, right: 10, bottom: 50 };
+  var element = document.getElementById("pieChart");
+  d3.select("#pieChart svg").remove();
+  var width = +element.clientWidth - 50;
+  var height = +element.clientWidth - 50;
+  var r = 100;
+  rawData.forEach(function (d) {
+    d.death = +d.death;
   });
-};
+  var data = rawData.filter(function (d) {
+    return d.death != 0;
+  });
+  data.sort(function (a, b) {
+    return parseInt(a.death) < parseInt(b.death) ? 1 : -1;
+  });
+  var color = d3.scaleOrdinal().domain(data.map(function (d) {
+    return d.death;
+  })).range(d3.quantize(function (t) {
+    return d3.interpolateSpectral(t * 0.8 + 0.1);
+  }, data.length).reverse());
+  var arc = d3.arc().innerRadius(0).outerRadius(Math.min(width, height) / 2 - 1);
+  var radius = Math.min(width, height) / 2 * 0.8;
+  var arcLabel = d3.arc().innerRadius(radius).outerRadius(radius);
+  var pie = d3.pie().sort(null).value(function (d) {
+    return d.death;
+  });
+  var arcs = pie(data);
+  var svg = d3.select("#pieChart").append("svg").attr("viewBox", [-width / 2, -height / 2, width, height]);
+  svg.append("g").attr("stroke", "white").selectAll("path").data(arcs).join("path").attr("fill", function (d) {
+    return color(d.data.name_of_state_ut);
+  }).attr("d", arc).on("click", function (d) {
+    d3.select(".tooltip").style("left", d3.event.pageX + "px").style("top", d3.event.pageY + "px").style('font-size', '12px').text("".concat(d.data.name_of_state_ut, ": ").concat(d.data.death));
+    setTimeout(function () {
+      mouseout();
+    }, 3000);
+  }).on('mouseover', mouseover); // .on('mouseover', mouseover);
+
+  svg.append("g").attr("font-family", "sans-serif").attr("font-size", 12).attr("text-anchor", "middle").selectAll("text").data(arcs).join("text").attr("transform", function (d) {
+    return "translate(".concat(arcLabel.centroid(d), ")");
+  }).call(function (text) {
+    return text.append("tspan").attr("y", "-0.4em").attr("font-weight", "bold").text(function (d) {
+      return d.data.death;
+    });
+  });
+} // create data table for Map
+
+
+function createDatatable(data) {
+  var th_rows = '';
+  var td_rows = '';
+  d3.select("#tableViewTitle").html(data.title);
+  data.field.forEach(function (field) {
+    th_rows += "<th>".concat(field.name, "</th>");
+  });
+  d3.select('#tableView thead tr').html(th_rows);
+  data.records.forEach(function (d) {
+    td_rows += "<tr>\n      <td>".concat(d.s_no, "</td>\n      <td>").concat(d.name_of_state_ut, "</td>\n      <td>").concat(d.total_confirmed_cases, "</td>\n      <td>").concat(d.cured_discharged_migrated, "</td>\n      <td>").concat(d.death, "</td>\n      <td>").concat(d.date, "</td>\n      <td>").concat(d.date_time, "</td>\n    </tr>");
+  });
+  d3.select('#tableView tbody').html(td_rows);
+} // vector layer creation
+
+
+var vector = new _layer.Vector({
+  source: new _Vector.default({
+    url: './data/top.json',
+    format: new _TopoJSON.default({
+      featureProjection: 'EPSG:3857'
+    }),
+    overlaps: false
+  }),
+  style: indiaStyle //  function(feature) {
+  //   style.getText().setText(feature.get('ST_NM'));
+  //   return style;
+  // }
+
+}); // map data
+
+var map = new _Map.default({
+  controls: (0, _control.defaults)().extend([new _control.ZoomToExtent({
+    extent: [7083572.2852, 670199.8640, 10842024.260498, 4255931.279733]
+  })]),
+  layers: [vector],
+  target: 'map',
+  view: new _View.default({
+    center: [8649002.624524, 2377497.327782]
+  })
+});
+map.getView().fit([7083572.2852, 670199.8640, 10842024.260498, 4255931.279733], {
+  constrainResolution: true
+}); // pointer move click for state value display
 
 map.on(['pointermove', 'singleclick'], function (e) {
   if (selected !== null) {
@@ -63158,187 +63349,18 @@ var popup = new _Overlay.default({
   positioning: 'bottom-left'
 });
 map.addOverlay(popup);
-
-var constructTable = function constructTable(data) {
-  var header = "<table class='table is-narrow is-bordered is-responsive'> \
-  <thead> \
-    <tr> \
-    <th>Field</th> \
-    <th>Value</th> \
-    </tr> \
-  </thead>";
-  var body = " <tbody><tr>     <td>Id</td>     <td>".concat(data.s_no, "</td>     </tr>     <tr>     <td>Name</td>     <td>").concat(data.name_of_state_ut, "</td>     </tr>     <tr>     <td>Total Confirm Cases</td>     <td>").concat(data.total_confirmed_cases, "</td>     </tr>     <tr>     <td>Cured/Discharged/Migrated</td>     <td>").concat(data.cured_discharged_migrated, "</td>     </tr>     <tr>     <td>Death</td>     <td>").concat(data.death, "</td>     </tr>     <tr>     <td>Last Update</td>     <td>").concat(data.date_time, "</td>     </tr> </tbody></table>");
-  var mobile_body = "<tbody><tr>     <td>Id</td>     <td>".concat(data.s_no, "</td>     </tr>     <tr>     <td>Name</td>     <td>").concat(data.name_of_state_ut, "</td>     </tr>     <tr>     <td>TotalCases</td>     <td>").concat(data.total_confirmed_cases, "</td>     </tr>     <tr>     <td>Cured</td>     <td>").concat(data.cured_discharged_migrated, "</td>     </tr>     <tr>     <td>Death</td>     <td>").concat(data.death, "</td>     </tr>     <tr>     <td>LastUpdate</td>     <td>").concat(data.date_time.split(' ')[0] + '<br/>' + data.date_time.split(' ')[1], "</td>     </tr> </tbody></table>");
-  return header + mobile_body;
-};
-
-var getOverlayOffsets = function getOverlayOffsets(mapInstance, overlay) {
-  var overlayRect = overlay.getElement().getBoundingClientRect();
-  var mapRect = mapInstance.getTargetElement().getBoundingClientRect();
-  var margin = 15; // if (!ol.extent.containsExtent(mapRect, overlayRect)) //could use, but need to convert rect to extent
-
-  var offsetLeft = overlayRect.left - mapRect.left;
-  var offsetRight = mapRect.right - overlayRect.right;
-  var offsetTop = overlayRect.top - mapRect.top;
-  var offsetBottom = mapRect.bottom - overlayRect.bottom;
-  console.log('offsets', offsetLeft, offsetRight, offsetTop, offsetBottom);
-  var delta = [0, 0];
-
-  if (offsetLeft < 0) {
-    // move overlay to the right
-    delta[0] = margin - offsetLeft;
-  } else if (offsetRight < 0) {
-    // move overlay  to the left
-    delta[0] = -(Math.abs(offsetRight) + margin);
-  }
-
-  if (offsetTop < 0) {
-    // will change the positioning instead of the offset to move overlay down.
-    delta[1] = margin - offsetTop;
-  } else if (offsetBottom < 0) {
-    // move overlay up - never happens if bottome-center is default.
-    delta[1] = -(Math.abs(offsetBottom) + margin);
-  }
-
-  return delta;
-};
-
-function highestcaseChart(data) {
-  var element = document.getElementById("mostCasesBarChart");
-  var width = +element.clientWidth;
-  element.style.height = width / 2 + 'px'; // element.clientHeight = +element.clientHeight+50
-
-  var height = +element.clientHeight; // set the dimensions and margins of the graph
-
-  var margin = {
-    left: 40,
-    top: 0,
-    right: 10,
-    bottom: 50
-  };
-  width = width - margin.left - margin.right, height = height - margin.top - margin.bottom; // append the svg object to the body of the page
-
-  var svg = d3.select("#mostCasesBarChart").append("svg").attr("width", width + margin.left + margin.right).attr("height", height + margin.top + margin.bottom).append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")"); // X axis
-
-  var x = d3.scaleBand().range([0, width]).domain(data.map(function (d) {
-    return d.name_of_state_ut;
-  })).padding(0.2);
-  svg.append("g").attr("transform", "translate(0," + height + ")").call(d3.axisBottom(x)).selectAll("text").attr("class", "axis").attr("transform", "translate(-10,0)rotate(-35)").style("text-anchor", "end"); // Add Y axis
-
-  var y = d3.scaleLinear().domain([0, d3.max(data, function (d) {
-    return d.total_confirmed_cases;
-  })]).range([height, 0]);
-  svg.append("g").attr("class", "axis").call(d3.axisLeft(y).ticks(5)); // Bars
-
-  svg.selectAll("bar").data(data).enter().append("rect").attr("x", function (d) {
-    return x(d.name_of_state_ut);
-  }).attr("width", x.bandwidth()).attr("fill", function (d) {
-    return colorSequence(d.total_confirmed_cases);
-  }) // no bar at the beginning thus:
-  .attr("height", function (d) {
-    return height - y(0);
-  }) // always equal to 0
-  .attr("y", function (d) {
-    return y(0);
-  }).on('mouseover', mouseover).on('mousemove', mousemove).on('mouseout', mouseout).on('click', clickEve); // Animation
-
-  svg.selectAll("rect").transition().duration(1000).attr("y", function (d) {
-    return y(d.total_confirmed_cases);
-  }).attr("height", function (d) {
-    return height - y(d.total_confirmed_cases);
-  }).delay(function (d, i) {
-    console.log(i);
-    return i * 200;
-  }); // text label for the y axis
-
-  svg.append("text").attr("transform", "rotate(-90)").attr("y", 0 - margin.left).attr("x", 0 - height / 2).attr("dy", ".8em").style("text-anchor", "middle").style("font-size", '11px').text("No of cases");
-  svg.append('text').attr('transform', "translate(".concat(width - margin.left, ", ").concat(height + 50, ")")).style("text-anchor", "middle").style("font-size", '11px').text("States");
-}
-
-var tooltipDiv = d3.select('body').append('div').attr('class', 'tooltip').style('display', 'none');
-
-function mouseover() {
-  tooltipDiv.style('display', 'inline');
-}
-
-function mousemove() {
-  var d = d3.select(this).data()[0];
-  tooltipDiv.html(d.name_of_state_ut + '<br/>' + d.total_confirmed_cases).style('left', d3.event.pageX - 10 + 'px').style('top', d3.event.pageY - 12 + 'px');
-}
-
-function mouseout() {
-  tooltipDiv.style('display', 'none');
-}
-
-function clickEve() {
-  mouseover();
-  var d = d3.select(this).data()[0];
-  tooltipDiv.html(d.name_of_state_ut + '<br/>' + d.total_confirmed_cases).style('left', d3.event.pageX - 10 + 'px').style('top', d3.event.pageY - 12 + 'px');
-  setTimeout(function () {
-    mouseout();
-  }, 3000);
-}
-
-function pieChart(rawData) {
-  // var margin = { left: 40, top: 0, right: 10, bottom: 50 };
-  var element = document.getElementById("pieChart");
-  var width = +element.clientWidth - 50;
-  var height = +element.clientWidth - 50;
-  var r = 100;
-  rawData.forEach(function (d) {
-    d.death = +d.death;
+window.addEventListener("resize", function (event) {
+  map.getView().fit([7083572.2852, 670199.8640, 10842024.260498, 4255931.279733], {
+    constrainResolution: true
   });
-  var data = rawData.filter(function (d) {
-    return d.death != 0;
-  });
-  data.sort(function (a, b) {
-    return parseInt(a.death) < parseInt(b.death) ? 1 : -1;
-  });
-  var color = d3.scaleOrdinal().domain(data.map(function (d) {
-    return d.death;
-  })).range(d3.quantize(function (t) {
-    return d3.interpolateSpectral(t * 0.8 + 0.1);
-  }, data.length).reverse());
-  var arc = d3.arc().innerRadius(0).outerRadius(Math.min(width, height) / 2 - 1);
-  var radius = Math.min(width, height) / 2 * 0.8;
-  var arcLabel = d3.arc().innerRadius(radius).outerRadius(radius);
-  var pie = d3.pie().sort(null).value(function (d) {
-    return d.death;
-  });
-  var arcs = pie(data);
-  var svg = d3.select("#pieChart").append("svg").attr("viewBox", [-width / 2, -height / 2, width, height]);
-  svg.append("g").attr("stroke", "white").selectAll("path").data(arcs).join("path").attr("fill", function (d) {
-    return color(d.data.name_of_state_ut);
-  }).attr("d", arc).append("title").text(function (d) {
-    return "".concat(d.data.name_of_state_ut, ": ").concat(d.data.death);
-  }).on("mouseover", function (d) {
-    d3.select(".tooltip").style("left", d3.event.pageX + "px").style("top", d3.event.pageY + "px").style("opacity", 1).style('font-size', '12px').select("#value").text(d.value);
-  }).on("mouseout", function () {
-    // Hide the tooltip
-    d3.select(".tooltip").style("opacity", 0);
-    ;
-  });
-  svg.append("g").attr("font-family", "sans-serif").attr("font-size", 12).attr("text-anchor", "middle").selectAll("text").data(arcs).join("text").attr("transform", function (d) {
-    return "translate(".concat(arcLabel.centroid(d), ")");
-  }).call(function (text) {
-    return text.append("tspan").attr("y", "-0.4em").attr("font-weight", "bold").text(function (d) {
-      return d.data.death;
-    });
-  });
-}
+  var top5Cases = covid_details.records.sort(function (a, b) {
+    return parseInt(a.total_confirmed_cases) < parseInt(b.total_confirmed_cases) ? 1 : -1;
+  }).slice(0, 5); // console.log(top5Cases);
 
-function createDatatable(data) {
-  var th_rows = '';
-  var td_rows = '';
-  data.field.forEach(function (field) {
-    th_rows += "<th>".concat(field.name, "</th>");
-  });
-  d3.select('#tableView thead tr').html(th_rows);
-  data.records.forEach(function (d) {
-    td_rows += "<tr>\n      <td>".concat(d.s_no, "</td>\n      <td>").concat(d.name_of_state_ut, "</td>\n      <td>").concat(d.total_confirmed_cases, "</td>\n      <td>").concat(d.cured_discharged_migrated, "</td>\n      <td>").concat(d.death, "</td>\n      <td>").concat(d.date, "</td>\n      <td>").concat(d.date_time, "</td>\n    </tr>");
-  });
-  d3.select('#tableView tbody').html(td_rows);
-}
+  highestcaseChart(top5Cases); // pie chart data update
+
+  pieChart(covid_details.records);
+});
 },{"ol/ol.css":"node_modules/ol/ol.css","ol/Map":"node_modules/ol/Map.js","ol/View":"node_modules/ol/View.js","ol/format/TopoJSON":"node_modules/ol/format/TopoJSON.js","ol/layer":"node_modules/ol/layer.js","ol/Overlay":"node_modules/ol/Overlay.js","ol/source/Vector":"node_modules/ol/source/Vector.js","ol/control":"node_modules/ol/control.js","ol/style":"node_modules/ol/style.js","https":"node_modules/https-browserify/index.js"}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
@@ -63367,7 +63389,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "50151" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "51371" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
