@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>TopoJSON</title>
+    <title>COVID-19 Map Dashboard</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- The line below is only needed for old environments like Internet Explorer and Android 4.x -->
@@ -68,8 +68,7 @@
       <div class="tile is-ancestor">
         <div class="tile is-12">
           <article class="tile is-child box">
-            <p class="title">Table View</p>
-            <p class="subtitle">Subtitle</p>
+            <p id="tableViewTitle" class="title">Table View</p>
             <div class="content">
               <table id="tableView" class="table is-fullwidth is-hoverable is-bordered is-responsive">
                 <thead>
@@ -95,6 +94,7 @@
       <strong><a href="https://data.gov.in/major-indicator/covid-19-india-data-source-mohfw">COVID-19 INDIA (Data Source MoHFW)</a> </strong>All datasets/resources including metadata published on data.gov.in are licensed
       under the Government Open Data Licence - India
     </div>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
     <script src="index.js"></script>
   </body>
 </html>
