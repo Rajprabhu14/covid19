@@ -62941,7 +62941,7 @@ var _style = require("ol/style");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // import GeoJSON from 'ol/format/GeoJSON';
-var https = require('https'); // var d3 = require("d3");
+var https = require("https"); // var d3 = require("d3");
 
 
 var colorSequence = d3.scaleSequential().interpolator(d3.interpolateBlues); // 7582123.989659,  10842024.260498, 731252.369785, 4255931.279733
@@ -62953,14 +62953,14 @@ var death = null;
 
 var createTextStyle = function createTextStyle(feature) {
   return new _style.Text({
-    text: feature.get('ST_NM'),
+    text: feature.get("ST_NM"),
     color: "#000"
   });
 }; // variable for mover interaction ferature
 
 
 var selected = null;
-var tooltipDiv = d3.select('body').append('div').attr('class', 'tooltip').style('display', 'none'); // filte function for available data
+var tooltipDiv = d3.select("body").append("div").attr("class", "tooltip").style("display", "none"); // filte function for available data
 
 var filteredData = function filteredData(name) {
   return covid_details.records.filter(function (d) {
@@ -62971,15 +62971,15 @@ var filteredData = function filteredData(name) {
 
 var createColor = function createColor(feature) {
   if (covid_details == null) {
-    return 'rgba(255, 255, 255, 0.6)';
+    return "rgba(255, 255, 255, 0.6)";
   } else {
-    var data = filteredData(feature.get('ST_NM')); // covid_details.records.filter(d => d.name_of_state_ut == feature.get('ST_NM'));
+    var data = filteredData(feature.get("ST_NM")); // covid_details.records.filter(d => d.name_of_state_ut == feature.get('ST_NM'));
 
     if (data.length) {
       return colorSequence(parseInt(data[0].total_confirmed_cases));
     }
 
-    return 'rgba(255, 255, 255, 0.6)';
+    return "rgba(255, 255, 255, 0.6)";
   }
 }; // Default style
 
@@ -62991,7 +62991,7 @@ var indiaStyle = function indiaStyle(feature, resolution) {
     }),
     // createFillColor(feature),
     stroke: new _style.Stroke({
-      color: '#DCDCDC',
+      color: "#DCDCDC",
       width: 1
     }),
     text: createTextStyle(feature) // new Text({
@@ -63016,7 +63016,7 @@ var indiaHighlightStyle = function indiaHighlightStyle(feature) {
     }),
     // createFillColor(feature),
     stroke: new _style.Stroke({
-      color: 'Tomato',
+      color: "Tomato",
       width: 3
     }),
     text: createTextStyle(feature)
@@ -63029,7 +63029,7 @@ function updateMapColor(feature) {
   //   console.log(feature);
   // });
   vector.getSource().refresh();
-  d3.select('.pageloader').classed("is-active", false); // style.getText().setText(feature.get('ST_NM'));
+  d3.select(".pageloader").classed("is-active", false); // style.getText().setText(feature.get('ST_NM'));
   // return style;
 } // table structure for state hover or click event
 
@@ -63043,19 +63043,19 @@ var constructTable = function constructTable(data) {
     </tr> \
   </thead>";
   var body = " <tbody><tr>     <td>Id</td>     <td>".concat(data.s_no, "</td>     </tr>     <tr>     <td>Name</td>     <td>").concat(data.name_of_state_ut, "</td>     </tr>     <tr>     <td>Total Confirm Cases</td>     <td>").concat(data.total_confirmed_cases, "</td>     </tr>     <tr>     <td>Cured/Discharged/Migrated</td>     <td>").concat(data.cured_discharged_migrated, "</td>     </tr>     <tr>     <td>Death</td>     <td>").concat(data.death, "</td>     </tr>     <tr>     <td>Last Update</td>     <td>").concat(data.date_time, "</td>     </tr> </tbody></table>");
-  var mobile_body = "<tbody><tr>     <td>Id</td>     <td>".concat(data.s_no, "</td>     </tr>     <tr>     <td>Name</td>     <td>").concat(data.name_of_state_ut, "</td>     </tr>     <tr>     <td>TotalCases</td>     <td>").concat(data.total_confirmed_cases, "</td>     </tr>     <tr>     <td>Cured</td>     <td>").concat(data.cured_discharged_migrated, "</td>     </tr>     <tr>     <td>Death</td>     <td>").concat(data.death, "</td>     </tr>     <tr>     <td>LastUpdate</td>     <td>").concat(data.date_time.split(' ')[0] + '<br/>' + data.date_time.split(' ')[1], "</td>     </tr> </tbody></table>");
+  var mobile_body = "<tbody><tr>     <td>Id</td>     <td>".concat(data.s_no, "</td>     </tr>     <tr>     <td>Name</td>     <td>").concat(data.name_of_state_ut, "</td>     </tr>     <tr>     <td>TotalCases</td>     <td>").concat(data.total_confirmed_cases, "</td>     </tr>     <tr>     <td>Cured</td>     <td>").concat(data.cured_discharged_migrated, "</td>     </tr>     <tr>     <td>Death</td>     <td>").concat(data.death, "</td>     </tr>     <tr>     <td>LastUpdate</td>     <td>").concat(data.date_time.split(" ")[0] + "<br/>" + data.date_time.split(" ")[1], "</td>     </tr> </tbody></table>");
   return header + mobile_body;
 }; // get request from data.gov,in
 
 
-https.get('https://api.data.gov.in/resource/cd08e47b-bd70-4efb-8ebc-589344934531?format=json&limit=all&api-key=579b464db66ec23bdd000001cdc3b564546246a772a26393094f5645', function (res) {
-  console.log('statusCode:', res.statusCode);
-  console.log('headers:', res.headers);
-  var body = '';
-  res.on('data', function (chunk) {
+https.get("https://api.data.gov.in/resource/cd08e47b-bd70-4efb-8ebc-589344934531?format=json&limit=all&api-key=579b464db66ec23bdd000001cdc3b564546246a772a26393094f5645", function (res) {
+  console.log("statusCode:", res.statusCode);
+  console.log("headers:", res.headers);
+  var body = "";
+  res.on("data", function (chunk) {
     body += chunk;
   });
-  res.on('end', function () {
+  res.on("end", function () {
     console.log(body);
     covid_details = JSON.parse(body);
     var initial_val = 0; // sum for main display
@@ -63064,17 +63064,17 @@ https.get('https://api.data.gov.in/resource/cd08e47b-bd70-4efb-8ebc-589344934531
       total += parseInt(curr.total_confirmed_cases);
       return total;
     }, initial_val);
-    d3.select('#confirmCases').html(total_cases);
+    d3.select("#confirmCases").html(total_cases);
     cured = covid_details.records.reduce(function (total, curr) {
       total += parseInt(curr.cured_discharged_migrated);
       return total;
     }, initial_val);
-    d3.select('#curedCases').html(cured);
+    d3.select("#curedCases").html(cured);
     death = covid_details.records.reduce(function (total, curr) {
       total += parseInt(curr.death);
       return total;
     }, initial_val);
-    d3.select('#deathCases').html(death); // min max for color creation
+    d3.select("#deathCases").html(death); // min max for color creation
 
     var min = d3.min(covid_details.records, function (d) {
       return parseInt(d.total_confirmed_cases);
@@ -63099,24 +63099,24 @@ https.get('https://api.data.gov.in/resource/cd08e47b-bd70-4efb-8ebc-589344934531
     pieChart(covid_details.records);
     createDatatable(covid_details);
   });
-}).on('error', function (e) {
+}).on("error", function (e) {
   console.error(e);
 }); // chart events
 
 function mouseover() {
-  tooltipDiv.style('display', 'inline');
+  tooltipDiv.style("display", "inline");
 }
 
 function mousemove() {
   var d = d3.select(this).data()[0];
-  tooltipDiv.html(d.name_of_state_ut + '<br/>' + d.total_confirmed_cases).style('left', d3.event.pageX - 10 + 'px').style('top', d3.event.pageY - 12 + 'px');
+  tooltipDiv.html(d.name_of_state_ut + "<br/>" + d.total_confirmed_cases).style("left", d3.event.pageX - 10 + "px").style("top", d3.event.pageY - 12 + "px");
   setTimeout(function () {
     mouseout();
   }, 5000);
 }
 
 function mouseout() {
-  tooltipDiv.style('display', 'none');
+  tooltipDiv.style("display", "none");
 } // changes of position for overlay popup
 
 
@@ -63129,7 +63129,7 @@ var getOverlayOffsets = function getOverlayOffsets(mapInstance, overlay) {
   var offsetRight = mapRect.right - overlayRect.right;
   var offsetTop = overlayRect.top - mapRect.top;
   var offsetBottom = mapRect.bottom - overlayRect.bottom;
-  console.log('offsets', offsetLeft, offsetRight, offsetTop, offsetBottom);
+  console.log("offsets", offsetLeft, offsetRight, offsetTop, offsetBottom);
   var delta = [0, 0];
 
   if (offsetLeft < 0) {
@@ -63156,7 +63156,7 @@ function highestcaseChart(data) {
   var element = document.getElementById("mostCasesBarChart");
   d3.select("#mostCasesBarChart svg").remove();
   var width = +element.clientWidth;
-  element.style.height = width / 2 + 'px'; // element.clientHeight = +element.clientHeight+50
+  element.style.height = width / 2 + "px"; // element.clientHeight = +element.clientHeight+50
 
   var height = +element.clientHeight; // set the dimensions and margins of the graph
 
@@ -63168,7 +63168,7 @@ function highestcaseChart(data) {
   };
   width = width - margin.left - margin.right, height = height - margin.top - margin.bottom; // append the svg object to the body of the page
 
-  var svg = d3.select("#mostCasesBarChart").append("svg").attr("width", width + margin.left + margin.right).attr("height", height + margin.top + margin.bottom).append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")"); // X axis
+  var svg = d3.select("#mostCasesBarChart").append("svg").attr("width", width + margin.left + margin.right + 10).attr("height", height + margin.top + margin.bottom).append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")"); // X axis
 
   var x = d3.scaleBand().range([0, width]).domain(data.map(function (d) {
     return d.name_of_state_ut;
@@ -63178,7 +63178,7 @@ function highestcaseChart(data) {
   var y = d3.scaleLinear().domain([0, d3.max(data, function (d) {
     return parseInt(d.total_confirmed_cases) + 100;
   })]).range([height, 0]);
-  svg.append("g").attr("class", "axis").call(d3.axisLeft(y).ticks(5)); // Bars
+  svg.append("g").attr("class", "axis").call(d3.axisLeft(y).ticks(5).tickSize(0)); // Bars
 
   svg.selectAll("bar").data(data).enter().append("rect").attr("x", function (d) {
     return x(d.name_of_state_ut);
@@ -63190,7 +63190,7 @@ function highestcaseChart(data) {
   }) // always equal to 0
   .attr("y", function (d) {
     return y(0);
-  }).on('mouseover', mouseover).on('click', mousemove); // Animation
+  }).on("mouseover", mouseover).on("click", mousemove); // Animation
 
   svg.selectAll("rect").transition().duration(1000).attr("y", function (d) {
     return y(d.total_confirmed_cases);
@@ -63201,8 +63201,8 @@ function highestcaseChart(data) {
     return i * 200;
   }); // text label for the y axis
 
-  svg.append("text").attr("transform", "rotate(-90)").attr("y", 0 - margin.left).attr("x", 0 - height / 2).attr("dy", ".8em").style("text-anchor", "middle").style("font-size", '11px').text("No of cases");
-  svg.append('text').attr('transform', "translate(".concat(width - margin.left, ", ").concat(height + 50, ")")).style("text-anchor", "middle").style("font-size", '11px').text("States");
+  svg.append("text").attr("transform", "rotate(-90)").attr("y", 0 - margin.left).attr("x", 0 - height / 2).attr("dy", ".6em").style("text-anchor", "middle").style("font-size", "11px").text("No of cases");
+  svg.append("text").attr("transform", "translate(".concat(width - margin.left, ", ").concat(height + 50, ")")).style("text-anchor", "middle").style("font-size", "11px").text("States");
 } // create pie charts
 
 
@@ -63213,14 +63213,18 @@ function pieChart(rawData) {
   var width = +element.clientWidth - 50;
   var height = +element.clientWidth - 50;
   var r = 100;
+  var groupedData = {};
   rawData.forEach(function (d) {
-    d.death = +d.death;
+    d.death = +d.death; // groupedData[d.death] = [...(d[name_of_state_ut] || []), d.name_of_state_ut];
   });
   var data = rawData.filter(function (d) {
     return d.death != 0;
   });
   data.sort(function (a, b) {
     return parseInt(a.death) < parseInt(b.death) ? 1 : -1;
+  });
+  data = data.filter(function (currentValue, index, arr) {
+    return index < 10;
   });
   var color = d3.scaleOrdinal().domain(data.map(function (d) {
     return d.death;
@@ -63238,11 +63242,11 @@ function pieChart(rawData) {
   svg.append("g").attr("stroke", "white").selectAll("path").data(arcs).join("path").attr("fill", function (d) {
     return color(d.data.name_of_state_ut);
   }).attr("d", arc).on("click", function (d) {
-    d3.select(".tooltip").style("left", d3.event.pageX + "px").style("top", d3.event.pageY + "px").style('font-size', '12px').text("".concat(d.data.name_of_state_ut, ": ").concat(d.data.death));
+    d3.select(".tooltip").style("left", d3.event.pageX + "px").style("top", d3.event.pageY + "px").style("font-size", "12px").text("".concat(d.data.name_of_state_ut, ": ").concat(d.data.death));
     setTimeout(function () {
       mouseout();
     }, 3000);
-  }).on('mouseover', mouseover); // .on('mouseover', mouseover);
+  }).on("mouseover", mouseover); // .on('mouseover', mouseover);
 
   svg.append("g").attr("font-family", "sans-serif").attr("font-size", 12).attr("text-anchor", "middle").selectAll("text").data(arcs).join("text").attr("transform", function (d) {
     return "translate(".concat(arcLabel.centroid(d), ")");
@@ -63255,25 +63259,25 @@ function pieChart(rawData) {
 
 
 function createDatatable(data) {
-  var th_rows = '';
-  var td_rows = '';
+  var th_rows = "";
+  var td_rows = "";
   d3.select("#tableViewTitle").html(data.title);
   data.field.forEach(function (field) {
     th_rows += "<th>".concat(field.name, "</th>");
   });
-  d3.select('#tableView thead tr').html(th_rows);
+  d3.select("#tableView thead tr").html(th_rows);
   data.records.forEach(function (d) {
     td_rows += "<tr>\n      <td>".concat(d.s_no, "</td>\n      <td>").concat(d.name_of_state_ut, "</td>\n      <td>").concat(d.total_confirmed_cases, "</td>\n      <td>").concat(d.cured_discharged_migrated, "</td>\n      <td>").concat(d.death, "</td>\n      <td>").concat(d.date, "</td>\n      <td>").concat(d.date_time, "</td>\n    </tr>");
   });
-  d3.select('#tableView tbody').html(td_rows);
+  d3.select("#tableView tbody").html(td_rows);
 } // vector layer creation
 
 
 var vector = new _layer.Vector({
   source: new _Vector.default({
-    url: './data/top.json',
+    url: "./data/top.json",
     format: new _TopoJSON.default({
-      featureProjection: 'EPSG:3857'
+      featureProjection: "EPSG:3857"
     }),
     overlaps: false
   }),
@@ -63286,35 +63290,35 @@ var vector = new _layer.Vector({
 
 var map = new _Map.default({
   controls: (0, _control.defaults)().extend([new _control.ZoomToExtent({
-    extent: [7083572.2852, 670199.8640, 10842024.260498, 4255931.279733]
+    extent: [7083572.2852, 670199.864, 10842024.260498, 4255931.279733]
   })]),
   layers: [vector],
-  target: 'map',
+  target: "map",
   view: new _View.default({
     center: [8649002.624524, 2377497.327782]
   })
 });
-map.getView().fit([7083572.2852, 670199.8640, 10842024.260498, 4255931.279733], {
+map.getView().fit([7083572.2852, 670199.864, 10842024.260498, 4255931.279733], {
   constrainResolution: true
 }); // pointer move click for state value display
 
-map.on(['pointermove', 'singleclick'], function (e) {
+map.on(["pointermove", "singleclick"], function (e) {
   if (selected !== null) {
     selected.setStyle(undefined);
     selected = null;
   }
 
   map.forEachFeatureAtPixel(e.pixel, function (f) {
-    popup.getElement().innerHTML = '';
+    popup.getElement().innerHTML = "";
     selected = f;
     f.setStyle(indiaHighlightStyle);
-    var data = filteredData(selected.get('ST_NM'));
+    var data = filteredData(selected.get("ST_NM"));
     popup.getElement().innerHTML = constructTable(data[0]);
     popup.setPosition(e.coordinate);
-    popup.setPositioning('bottom-left');
+    popup.setPositioning("bottom-left");
 
     if (window.screen.width <= 520) {
-      popup.setPositioning('center-center');
+      popup.setPositioning("center-center");
     }
 
     return selected;
@@ -63323,16 +63327,16 @@ map.on(['pointermove', 'singleclick'], function (e) {
   var delta = getOverlayOffsets(map, popup); // popup.setPosition(e.coordinate);
 
   if (delta[0] < 0) {
-    popup.setPositioning('top-right');
+    popup.setPositioning("top-right");
 
     if (window.screen.width <= 520) {
-      popup.setPositioning('top-right');
+      popup.setPositioning("top-right");
     }
   } else if (delta[0] == 0 && delta[1] > 0) {
-    popup.setPositioning('top-left');
+    popup.setPositioning("top-left");
 
     if (window.screen.width <= 520) {
-      popup.setPositioning('center-left');
+      popup.setPositioning("center-left");
     }
   } // else if(delta[1] ==0 && delta[0]==0){
   //   popup.setPositioning('top-left');
@@ -63340,17 +63344,17 @@ map.on(['pointermove', 'singleclick'], function (e) {
   // popup.setOffset(delta);
 
 
-  popup.getElement().style.display = selected ? '' : 'none';
-  document.body.style.cursor = selected ? 'pointer' : '';
+  popup.getElement().style.display = selected ? "" : "none";
+  document.body.style.cursor = selected ? "pointer" : "";
 }); // Popup showing the position the user clicked
 
 var popup = new _Overlay.default({
-  element: document.getElementById('popup'),
-  positioning: 'bottom-left'
+  element: document.getElementById("popup"),
+  positioning: "bottom-left"
 });
 map.addOverlay(popup);
 window.addEventListener("resize", function (event) {
-  map.getView().fit([7083572.2852, 670199.8640, 10842024.260498, 4255931.279733], {
+  map.getView().fit([7083572.2852, 670199.864, 10842024.260498, 4255931.279733], {
     constrainResolution: true
   });
   var top5Cases = covid_details.records.sort(function (a, b) {
@@ -63389,7 +63393,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "51371" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "50142" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
